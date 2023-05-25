@@ -4,21 +4,49 @@ const fetchBtn = postsListEl.previousElementSibling;
 const formEl = document.querySelector("#new-post form");
 
 function sendHttpRequest(method, url, data) {
+  /* Using XMLHttpRequest API
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.responseType = "json";
+    xhr.setRequestHeader("Content-Type","application/json");
+    xhr.setRequestHeader("Custom-Header","text/plain");
+      xhr.open(method, url);
+      xhr.responseType = "json";
+    
+      xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response);
+          else reject(new Error("This is a Server Side Error"));
+        });
+        xhr.addEventListener("error", () =>
+          reject(new Error("This is Network Error"))
+        );
+      
+        xhr.send(JSON.stringify(data));
+      });
+*/
 
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status <= 300) resolve(xhr.response);
-      else reject(new Error("This is a Server Side Error"));
+  // Using the fetch API
+  return fetch(url, {
+    method: method,
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+      "Custom-Header": "text/plain",
+    },
+  })
+    .then((response) => {
+      if (response.status >= 200 && response.status < 300)
+        return response.json();
+      else {
+        return response.json().then((errData) => {
+          console.log(`The err Data: `, errData);
+          throw new Error("Server Side Error!!");
+        });
+      }
+    })
+    .catch((e) => {
+      console.log(e);
+      throw new Error("This is from the Catch Error!");
     });
-    xhr.addEventListener("error", () =>
-      reject(new Error("This is Network Error"))
-    );
-
-    xhr.send(JSON.stringify(data));
-  });
 }
 
 // Fetch Posts from the Server
@@ -26,7 +54,7 @@ async function fetchPosts() {
   try {
     const posts = await sendHttpRequest(
       "GET",
-      "https://jsonplaceholder.typicode.com/posts"
+      "https://jsonplaceholder.typicode.com/posts/p"
     );
 
     postsListEl.innerHTML = "";
