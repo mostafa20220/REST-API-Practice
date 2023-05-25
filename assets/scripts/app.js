@@ -54,7 +54,7 @@ async function fetchPosts() {
   try {
     const posts = await sendHttpRequest(
       "GET",
-      "https://jsonplaceholder.typicode.com/posts/p"
+      "https://jsonplaceholder.typicode.com/posts"
     );
 
     postsListEl.innerHTML = "";
@@ -72,46 +72,32 @@ async function fetchPosts() {
 
 // Add post to both the server, and the UI.
 async function addPost() {
-  // selecting the needed DOM Nodes
-  const newPostTitleInput = document.getElementById("title");
-  const newPostContentInput = document.getElementById("content");
-  const newPostTitleValue = newPostTitleInput.value;
-  const newPostContentValue = newPostContentInput.value;
+
+  // getting the form data using "FormData";
+  const newPostFd = new FormData(formEl);
+  newPostFd.append("userId",(Math.random() * 10).toFixed());
 
   // validate user input
-  if (!(newPostTitleValue.trim() && newPostContentValue.trim())) {
+  if (!(newPostFd.get("title") && newPostFd.get("body"))) {
     alert("Inputs are Not Valid, try again...");
     return;
   }
 
   // clear the inputs //
-  //1st way
-  newPostTitleInput.closest("form").reset();
-  // //2nd way
-  // newPostTitleInput.value='';
-  // newPostContentInput.value='';
-  // //3rd way
-  // newPostTitleInput.value=newPostTitleInput.defaultValue;
-  // newPostContentInput.value=newPostContentInput.defaultValue;
+  formEl.reset();
 
   // send the post request
-  const post = {
-    title: newPostTitleValue,
-    userId: (Math.random() * 10).toFixed(2),
-    body: newPostContentValue,
-  };
-
   try {
     const postIdResponse = await sendHttpRequest(
       "POST",
       "https://jsonplaceholder.typicode.com/posts",
-      post
+      newPostFd
     );
 
     // update the UI
     const postEl = document.importNode(postTemplate, true).content;
-    postEl.querySelector("h2").textContent = post.title;
-    postEl.querySelector("p").textContent = post.body;
+    postEl.querySelector("h2").textContent = newPostFd.get("title");
+    postEl.querySelector("p").textContent = newPostFd.get("body");
     postEl.querySelector("li").id = postIdResponse;
     postsListEl.append(postEl);
   } catch (e) {
@@ -142,3 +128,15 @@ postsListEl.addEventListener("click", (e) => {
     }
   }
 });
+
+//***************************** */
+/*  Try using lodash library 
+*********************************
+ *  const num1 = [1,2,3,4,5,6,7];
+ *  const num2 = [1,2,3,8,9];
+ *
+ *  // console the difference
+ *  const diff = _.difference(num1,num2); // why there is no auto complete for the lodash lib. ?!, i guess i have to add it using an extension or something
+ *  console.log(diff); 
+ */
+
